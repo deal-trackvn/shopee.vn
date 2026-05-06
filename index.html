@@ -8,13 +8,13 @@
     <style>
         :root { --shopee-orange: #ee4d2d; --tech-blue: #003366; }
         body { background-color: #f0f2f5; font-family: 'Segoe UI', sans-serif; color: #333; }
-        .tool-card { max-width: 900px; margin: 40px auto; background: #fff; padding: 35px; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); border-top: 6px solid var(--shopee-orange); }
+        .tool-card { max-width: 850px; margin: 40px auto; background: #fff; padding: 35px; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); border-top: 6px solid var(--shopee-orange); }
         .header-title { color: var(--tech-blue); font-weight: 800; }
         .btn-shopee { background-color: var(--shopee-orange); color: white; border: none; font-weight: bold; }
         .btn-shopee:hover { background-color: #d73211; color: white; }
         #resultArea, #searchList { display: none; margin-top: 25px; }
-        .product-item { background: #fff; border: 1px solid #eee; border-radius: 12px; transition: all 0.2s; cursor: pointer; padding: 15px; margin-bottom: 15px; }
-        .product-item:hover { border-color: var(--shopee-orange); box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
+        .product-item { background: #fff; border: 1px solid #eee; border-radius: 12px; transition: all 0.2s; cursor: pointer; padding: 15px; margin-bottom: 12px; text-align: left; }
+        .product-item:hover { border-color: var(--shopee-orange); box-shadow: 0 5px 15px rgba(0,0,0,0.05); background: #fffcfb; }
         .price-text { color: var(--shopee-orange); font-weight: bold; font-size: 1.2rem; }
     </style>
 </head>
@@ -23,41 +23,41 @@
 <div class="container">
     <div class="tool-card text-center">
         <h2 class="header-title mb-2">🔍 HỆ THỐNG PHÂN TÍCH DEAL SHOPEE</h2>
-        <p class="text-muted mb-4">Dán link sản phẩm hoặc nhập tên món đồ bạn muốn tìm để hệ thống tối ưu giá.</p>
+        <p class="text-muted mb-4">Dán link Shopee hoặc nhập tên sản phẩm (ví dụ: bcs, camera, laptop...)</p>
         
         <div class="input-group mb-4">
-            <input type="text" id="shopeeInput" class="form-control form-control-lg" placeholder="Dán link sản phẩm hoặc nhập tên (vd: Camera imou, Nồi cơm điện...)">
+            <input type="text" id="shopeeInput" class="form-control form-control-lg" placeholder="Dán link hoặc nhập tên món đồ...">
             <button class="btn btn-shopee btn-lg px-4" onclick="handleSearch()" type="button">PHÂN TÍCH</button>
         </div>
 
         <div id="loader" class="d-none my-4">
             <div class="spinner-border text-danger" role="status"></div>
-            <p class="mt-2 text-primary small fw-bold">Đang truy vấn dữ liệu từ Shopee API & Tối ưu link Affiliate...</p>
+            <p class="mt-2 text-primary small fw-bold">Đang truy vấn dữ liệu từ Shopee API & Tối ưu link Affiliate cho Timon...</p>
         </div>
 
-        <!-- TRƯỜNG HỢP 1: PHÂN TÍCH 1 LINK CỤ THỂ -->
+        <!-- HIỂN THỊ KẾT QUẢ CHO 1 LINK -->
         <div id="resultArea" class="text-start p-3 bg-light rounded shadow-sm">
             <h6 class="text-primary mb-3">🛠 Kết quả phân tích link trực tiếp:</h6>
             <div class="row align-items-center">
-                <div class="col-md-3 text-center"><img id="pImg" src="" class="img-fluid rounded border"></div>
+                <div class="col-md-3 text-center"><img id="pImg" src="https://img.icons8.com/clouds/200/shopee.png" class="img-fluid rounded border"></div>
                 <div class="col-md-9">
-                    <h5 id="pTitle" class="mb-1">Tên sản phẩm</h5>
-                    <div id="pPrice" class="price-text mb-2">đ 0</div>
-                    <a href="#" id="pFinalLink" class="btn btn-shopee w-100 py-2">MỞ TRÊN APP SHOPEE</a>
+                    <h5 id="pTitle" class="mb-1">Sản phẩm bạn yêu cầu</h5>
+                    <div id="pPrice" class="price-text mb-2">đ 1.250.000</div>
+                    <a href="#" id="pFinalLink" target="_blank" class="btn btn-shopee w-100 py-2">MỞ TRÊN APP SHOPEE</a>
                 </div>
             </div>
         </div>
 
-        <!-- TRƯỜNG HỢP 2: TÌM KIẾM DANH SÁCH SẢN PHẨM -->
-        <div id="searchList" class="text-start">
-            <h6 class="text-primary mb-3">📊 Top sản phẩm có giá & hoa hồng tốt nhất:</h6>
+        <!-- HIỂN THỊ DANH SÁCH TÌM KIẾM -->
+        <div id="searchList">
+            <h6 class="text-primary mb-3 text-start">📊 Top sản phẩm có ưu đãi tốt nhất tìm thấy:</h6>
             <div id="searchItemsContainer">
-                <!-- Danh sách sản phẩm tìm kiếm sẽ render vào đây -->
+                <!-- Data đổ vào đây -->
             </div>
         </div>
 
         <footer class="mt-5 text-muted small">
-            Vận hành bởi <strong>Timon Tech</strong> | Sử dụng API v2.1 Shopee Open Platform
+            Vận hành bởi <strong>Timon Tech</strong> | API v2.1 Shopee Open Platform
         </footer>
     </div>
 </div>
@@ -68,60 +68,51 @@
         const loader = document.getElementById('loader');
         const resultArea = document.getElementById('resultArea');
         const searchList = document.getElementById('searchList');
+        const container = document.getElementById('searchItemsContainer');
 
-        if (!input) return alert("Ní nhập cái gì đó đi chứ!");
+        if (!input) {
+            alert("Ní nhập cái gì đó đi chứ!");
+            return;
+        }
 
+        // Hiện hiệu ứng loading
         loader.classList.remove('d-none');
         resultArea.style.display = 'none';
         searchList.style.display = 'none';
+        container.innerHTML = '';
 
-        // GIẢ LẬP GỌI API (Thực tế ông sẽ dùng fetch tới API Shopee hoặc Backend của ông)
         setTimeout(() => {
             loader.classList.add('d-none');
 
-            if (input.includes('shopee.vn')) {
-                // XỬ LÝ LINK TRỰC TIẾP
-                showSingleResult(input);
+            if (input.includes('shopee.vn') || input.includes('http')) {
+                // Nếu là Link
+                resultArea.style.display = 'block';
+                document.getElementById('pTitle').innerText = "Sản phẩm từ link Shopee";
+                document.getElementById('pFinalLink').href = input;
             } else {
-                // XỬ LÝ TÌM KIẾM THEO TÊN
-                showSearchList(input);
+                // Nếu là Từ khóa (VD: bcs)
+                searchList.style.display = 'block';
+                
+                // Giả lập 3 sản phẩm tìm kiếm (Sau này thay bằng API Shopee)
+                const mockData = [
+                    { name: input + " - Loại 1 Siêu mỏng", price: "120.000", discount: "20%" },
+                    { name: input + " - Hộp 12 cái chính hãng", price: "250.000", discount: "15%" },
+                    { name: input + " - Combo tiết kiệm", price: "99.000", discount: "50%" }
+                ];
+
+                mockData.forEach(item => {
+                    container.innerHTML += `
+                        <div class="product-item d-flex align-items-center" onclick="window.open('https://shopee.vn', '_blank')">
+                            <div class="flex-grow-1">
+                                <div class="fw-bold">${item.name}</div>
+                                <div class="price-text">đ ${item.price} <span class="badge bg-warning text-dark ms-2" style="font-size:0.7rem">-${item.discount}</span></div>
+                            </div>
+                            <button class="btn btn-outline-danger btn-sm">Mua ngay</button>
+                        </div>
+                    `;
+                });
             }
-        }, 1500);
-    }
-
-    function showSingleResult(url) {
-        document.getElementById('resultArea').style.display = 'block';
-        document.getElementById('pTitle').innerText = "Sản phẩm từ link bạn cung cấp";
-        document.getElementById('pPrice').innerText = "đ 1.250.000 (Đã tối ưu mã)";
-        document.getElementById('pImg').src = "https://img.icons8.com/clouds/200/shopee.png";
-        document.getElementById('pFinalLink').href = url; // Sẽ là link affiliate
-    }
-
-    function showSearchList(keyword) {
-        const container = document.getElementById('searchItemsContainer');
-        container.innerHTML = ''; // Clear cũ
-        document.getElementById('searchList').style.display = 'block';
-
-        // Giả lập 3 sản phẩm tìm được qua API
-        const mockProducts = [
-            { name: keyword + " - Bản quốc tế", price: "890.000", img: "https://via.placeholder.com/80", discount: "15%" },
-            { name: keyword + " - Hàng chính hãng", price: "1.100.000", img: "https://via.placeholder.com/80", discount: "10%" },
-            { name: keyword + " - Combo tiết kiệm", price: "750.000", img: "https://via.placeholder.com/80", discount: "20%" }
-        ];
-
-        mockProducts.forEach(p => {
-            const html = `
-                <div class="product-item d-flex align-items-center" onclick="window.open('https://shopee.vn', '_blank')">
-                    <img src="${p.img}" class="rounded me-3" style="width: 60px;">
-                    <div class="flex-grow-1">
-                        <div class="fw-bold text-dark">${p.name}</div>
-                        <div class="price-text">đ ${p.price} <span class="badge bg-warning text-dark ms-2" style="font-size:0.7rem">Giảm ${p.discount}</span></div>
-                    </div>
-                    <button class="btn btn-outline-danger btn-sm">Xem ngay</button>
-                </div>
-            `;
-            container.innerHTML += html;
-        });
+        }, 1200);
     }
 </script>
 </body>
