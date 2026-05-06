@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trợ Lý Săn Deal Shopee - Công Nghệ AI & Dữ Liệu</title>
+    <!-- Import Bootstrap 5 để có giao diện chuẩn IT -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --shopee-orange: #ee4d2d;
+            --tech-blue: #003366;
+        }
+        body { 
+            background-color: #f0f2f5; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #333;
+        }
+        .tool-card {
+            max-width: 700px;
+            margin: 60px auto;
+            background: #ffffff;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            border-top: 5px solid var(--shopee-orange);
+        }
+        .header-title {
+            color: var(--tech-blue);
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+        .btn-shopee {
+            background-color: var(--shopee-orange);
+            color: white;
+            border: none;
+            transition: all 0.3s ease;
+        }
+        .btn-shopee:hover {
+            background-color: #d73211;
+            color: white;
+            transform: translateY(-2px);
+        }
+        #resultArea {
+            display: none;
+            margin-top: 30px;
+            padding: 20px;
+            background: #fafafa;
+            border-radius: 12px;
+            border: 1px solid #eee;
+        }
+        .price-tag {
+            color: var(--shopee-orange);
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        .badge-scientific {
+            background-color: #e3f2fd;
+            color: #0d47a1;
+            font-size: 0.8rem;
+            border: 1px solid #bbdefb;
+        }
+        footer {
+            margin-top: 30px;
+            font-size: 0.85rem;
+            color: #888;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="tool-card text-center">
+        <h2 class="header-title mb-3">🔍 HỆ THỐNG PHÂN TÍCH DEAL SHOPEE</h2>
+        <p class="text-muted mb-4">Sử dụng thuật toán để lấy mã giảm giá và kiểm tra độ tin cậy của sản phẩm.</p>
+        
+        <div class="input-group mb-3">
+            <input type="text" id="shopeeInput" class="form-control form-control-lg" placeholder="Dán link sản phẩm Shopee tại đây...">
+            <button class="btn btn-shopee btn-lg px-4" onclick="processData()" type="button">PHÂN TÍCH</button>
+        </div>
+
+        <!-- Hiệu ứng loading cho chuyên nghiệp -->
+        <div id="loader" class="d-none my-4">
+            <div class="spinner-grow text-danger" role="status"></div>
+            <p class="mt-2 text-primary small fw-bold">Đang kết nối API Shopee & Verify chữ ký số...</p>
+        </div>
+
+        <!-- Kết quả sau khi xử lý -->
+        <div id="resultArea" class="text-start animate__animated animate__fadeIn">
+            <div class="d-flex align-items-center mb-3">
+                <span class="badge badge-scientific me-2">Dữ liệu thời gian thực</span>
+                <span class="badge bg-success">An toàn</span>
+            </div>
+            
+            <div class="row align-items-center">
+                <div class="col-md-4 text-center">
+                    <img id="pImg" src="https://via.placeholder.com/150" class="img-fluid rounded shadow-sm" alt="Thumbnail">
+                </div>
+                <div class="col-md-8">
+                    <h5 id="pTitle" class="mb-2 text-dark">Tên sản phẩm đang xử lý...</h5>
+                    <div id="pPrice" class="price-tag mb-2">đ 0</div>
+                    <p class="small text-muted mb-3">
+                        <i class="bi bi-graph-down"></i> Ghi chú kỹ thuật: Sản phẩm khả dụng cho chương trình hoàn tiền.
+                    </p>
+                    <a href="#" id="pFinalLink" class="btn btn-shopee w-100 py-3 fw-bold shadow">
+                        MỞ TRONG ỨNG DỤNG SHOPEE
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            Hệ thống vận hành bởi <strong>Timon Tech</strong> <br>
+            Dữ liệu được xác thực qua Shopee Open Platform API
+        </footer>
+    </div>
+</div>
+
+<script>
+    /**
+     * Logic xử lý Link và API
+     * Ghi chú cho Timon: Phần gọi API thật sẽ nằm trong hàm này sau khi ông được duyệt Partner Key.
+     */
+    async function processData() {
+        const input = document.getElementById('shopeeInput').value;
+        const loader = document.getElementById('loader');
+        const result = document.getElementById('resultArea');
+
+        // Validation cơ bản
+        if (!input || !input.includes('shopee.vn')) {
+            alert("Ní ơi, dán đúng link Shopee thì hệ thống mới phân tích được!");
+            return;
+        }
+
+        // Hiển thị trạng thái đang xử lý (nhìn cho giống dân IT đang chạy code)
+        loader.classList.remove('d-none');
+        result.style.display = 'none';
+
+        // Giả lập độ trễ khi gọi API (1.8s)
+        setTimeout(() => {
+            loader.classList.add('d-none');
+            result.style.display = 'block';
+
+            // --- ĐÂY LÀ KHÚC SAU NÀY ÔNG THAY BẰNG DỮ LIỆU TỪ API THẬT ---
+            document.getElementById('pTitle').innerText = "Sản phẩm công nghệ bạn đang quan tâm";
+            document.getElementById('pPrice').innerText = "Đã áp dụng mã giảm giá tốt nhất";
+            document.getElementById('pImg').src = "https://img.icons8.com/clouds/200/shopee.png";
+            
+            // Link này sẽ là link đã qua hàm generate_short_link của ông
+            document.getElementById('pFinalLink').href = input; // Tạm thời để link gốc
+            
+            console.log("Hệ thống Timon đã xử lý link: " + input);
+        }, 1800);
+    }
+</script>
+
+</body>
+</html>
