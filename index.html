@@ -9,42 +9,35 @@
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
     <style>
         :root { --shopee-orange: #ee4d2d; }
-        body { background-color: #f8f9fa; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        .tool-card { max-width: 700px; margin: 50px auto; background: #fff; padding: 30px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border-top: 5px solid var(--shopee-orange); }
-        .btn-shopee { background-color: var(--shopee-orange); color: white; border: none; font-weight: bold; transition: 0.3s; }
-        .btn-shopee:hover { background-color: #d73211; transform: scale(1.02); }
-        #searchItemsContainer { margin-top: 25px; }
-        .product-item { background: #fff; border: 1px solid #eee; border-radius: 10px; padding: 15px; margin-bottom: 15px; display: flex; align-items: center; text-align: left; transition: 0.2s; }
-        .product-item:hover { border-color: var(--shopee-orange); box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
-        .price-text { color: var(--shopee-orange); font-size: 1.2rem; font-weight: bold; }
-        .product-info { flex-grow: 1; padding-right: 15px; }
-        .product-name { font-size: 1rem; color: #333; font-weight: 500; margin-bottom: 5px; }
+        body { background-color: #f8f9fa; font-family: 'Segoe UI', Tahoma, sans-serif; }
+        .tool-card { max-width: 700px; margin: 40px auto; background: #fff; padding: 30px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border-top: 5px solid var(--shopee-orange); }
+        .btn-shopee { background-color: var(--shopee-orange); color: white; border: none; font-weight: bold; }
+        .btn-shopee:hover { background-color: #d73211; color: white; }
+        .product-item { background: #fff; border: 1px solid #eee; border-radius: 10px; padding: 15px; margin-bottom: 12px; display: flex; align-items: center; text-align: left; }
+        .price-text { color: var(--shopee-orange); font-size: 1.1rem; font-weight: bold; }
+        .product-info { flex-grow: 1; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div class="tool-card text-center">
-        <h2 class="mb-4">🔍 HỆ THỐNG PHÂN TÍCH DEAL</h2>
-        <p class="text-muted">Nhập tên sản phẩm để Máy cày Timon Tech gán mã giảm giá</p>
-        
+        <h2 class="mb-4">🔍 HỆ THỐNG PHÂN TÍCH DEAL SHOPEE</h2>
         <div class="input-group mb-3">
             <input type="text" id="shopeeInput" class="form-control form-control-lg" placeholder="Ví dụ: Camera Imou, Sạc dự phòng...">
-            <button class="btn btn-shopee btn-lg px-4" onclick="sendRequest()">PHÂN TÍCH</button>
+            <button class="btn btn-shopee px-4" onclick="sendRequest()">PHÂN TÍCH</button>
         </div>
 
-        <div id="status" class="my-4 d-none text-center">
+        <div id="status" class="my-4 d-none">
             <div class="spinner-border text-danger" role="status"></div>
-            <div class="mt-2 text-danger fw-bold">Máy cày tại nhà đang xử lý dữ liệu...</div>
-            <small class="text-muted">Đang gọi API Accesstrade để gán mã của Timon</small>
+            <div class="mt-2 text-danger fw-bold">Máy cày Timon đang cào dữ liệu & gán mã Affiliate...</div>
         </div>
 
-        <div id="searchItemsContainer"></div>
+        <div id="searchItemsContainer" class="mt-4"></div>
     </div>
 </div>
 
 <script>
-    // --- CẤU HÌNH FIREBASE CỦA ÔNG ---
     const firebaseConfig = {
         apiKey: "AIzaSyBB9RoTHWPhlcZkOlDSyOgZAqZMZyDn-g4",
         authDomain: "timonaffiliate-d7849.firebaseapp.com",
@@ -55,7 +48,6 @@
         appId: "1:863747128310:web:70b49c76b6bdc09b5c25d7"
     };
     
-    // Khởi tạo Firebase
     firebase.initializeApp(firebaseConfig);
     const database = firebase.database();
 
@@ -65,59 +57,42 @@
 
         const status = document.getElementById('status');
         const container = document.getElementById('searchItemsContainer');
-
-        // Reset giao diện
         status.classList.remove('d-none');
         container.innerHTML = '';
 
-        // Tạo một ID duy nhất cho yêu cầu này (dùng timestamp)
         const requestId = Date.now();
 
-        // 1. Gửi lệnh vào nhánh 'requests' để Python nhận diện
+        // 1. Gửi lệnh vào requests
         database.ref('requests/' + requestId).set({
             keyword: keyword,
-            status: 'pending',
-            timestamp: requestId
-        }).then(() => {
-            console.log("🚀 Đã gửi yêu cầu:", requestId);
+            status: 'pending'
         });
 
-        // 2. Lắng nghe kết quả tại nhánh 'results'
-        // Khi Python xử lý xong, nó sẽ tạo một bản ghi tại kết quả/[requestId]
+        // 2. Lắng nghe tại nhánh results (Có thêm chữ 's')
         const resultRef = database.ref('results/' + requestId);
-        
         resultRef.on('value', (snapshot) => {
             const data = snapshot.val();
-            
-            // Nếu có dữ liệu trả về và có danh sách sản phẩm
             if (data && data.products) {
-                console.log("✅ Đã nhận được hàng!", data.products);
-                status.classList.add('d-none'); // Tắt loading
-                renderResults(data.products);   // Vẽ sản phẩm ra web
-                resultRef.off();               // Dừng lắng nghe để đỡ tốn ram
+                console.log("✅ Hàng về rồi ní ơi!", data.products);
+                status.classList.add('d-none');
+                renderResults(data.products);
+                resultRef.off(); 
             }
         });
     }
 
     function renderResults(products) {
         const container = document.getElementById('searchItemsContainer');
-        container.innerHTML = '<h5 class="text-start mb-3">🔥 Deal đã gán mã Affiliate của Timon:</h5>';
-        
-        if (products.length === 0) {
-            container.innerHTML = '<p class="text-muted">Không tìm thấy sản phẩm. Thử lại từ khóa khác nhé!</p>';
-            return;
-        }
-
+        container.innerHTML = '<h5 class="text-start mb-3">🔥 Deal đã gán mã của Timon:</h5>';
         products.forEach(p => {
             container.innerHTML += `
                 <div class="product-item">
                     <div class="product-info">
-                        <div class="product-name">${p.name}</div>
+                        <div class="fw-bold text-dark">${p.name}</div>
                         <div class="price-text">₫${p.price}</div>
                     </div>
-                    <a href="${p.aff_link}" target="_blank" class="btn btn-shopee">MUA NGAY</a>
-                </div>
-            `;
+                    <a href="${p.aff_link}" target="_blank" class="btn btn-sm btn-shopee">MUA NGAY</a>
+                </div>`;
         });
     }
 </script>
