@@ -70,16 +70,20 @@
 
         // 2. Lắng nghe tại nhánh results (Có thêm chữ 's')
         const resultRef = database.ref('results/' + requestId);
-        resultRef.on('value', (snapshot) => {
-            const data = snapshot.val();
-            if (data && data.products) {
-                console.log("✅ Hàng về rồi ní ơi!", data.products);
-                status.classList.add('d-none');
-                renderResults(data.products);
-                resultRef.off(); 
-            }
-        });
-    }
+    
+    resultRef.on('value', (snapshot) => {
+        const data = snapshot.val();
+        
+        // Console log này để ní F12 xem dữ liệu nó "chảy" về web chưa
+        console.log("Dữ liệu từ Firebase trả về:", data);
+
+        if (data && data.products) {
+            status.classList.add('d-none');
+            renderResults(data.products);
+            // Nhận được hàng rồi thì ngắt kết nối cho đỡ tốn tài nguyên
+            resultRef.off();
+        }
+    });
 
 function renderResults(products) {
         const container = document.getElementById('searchItemsContainer');
