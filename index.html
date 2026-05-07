@@ -81,17 +81,18 @@
         });
     }
 
-    function renderResults(products) {
+function renderResults(products) {
         const container = document.getElementById('searchItemsContainer');
-        container.innerHTML = '<h5 class="text-start mb-3">🔥 Deal đã gán mã của Timon:</h5>';
+        container.innerHTML = '<h5 class="text-start mb-3">🔥 Kết quả soi Deal cho Timon:</h5>';
         products.forEach(p => {
             container.innerHTML += `
-                <div class="product-item">
-                    <div class="product-info">
-                        <div class="fw-bold text-dark">${p.name}</div>
-                        <div class="price-text">₫${p.price}</div>
+                <div class="product-item" style="border:1px solid #ddd; padding:15px; border-radius:10px; margin-bottom:10px; text-align:left;">
+                    <div class="fw-bold">${p.name}</div>
+                    <div style="color: #ee4d2d; font-weight: bold; font-size: 1.2rem;">₫${p.price}</div>
+                    <div class="mt-2">
+                        <a href="${p.aff_link}" target="_blank" class="btn btn-outline-danger btn-sm">LẤY LINK GỐC</a>
+                        <small class="text-muted d-block mt-1">Dán link này vào App Aff để lấy hoa hồng ní nhé!</small>
                     </div>
-                    <a href="${p.aff_link}" target="_blank" class="btn btn-sm btn-shopee">MUA NGAY</a>
                 </div>`;
         });
     }
