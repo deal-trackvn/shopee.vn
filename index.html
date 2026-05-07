@@ -3,55 +3,59 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hệ Thống Phân Tích Deal Shopee - Timon Tech</title>
+    <title>Săn Deal Shopee - Timon Tech</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
     <style>
-        :root { --shopee-orange: #ee4d2d; --tech-blue: #003366; }
-        body { background-color: #f0f2f5; font-family: 'Segoe UI', sans-serif; }
-        .tool-card { max-width: 800px; margin: 40px auto; background: #fff; padding: 30px; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); border-top: 6px solid var(--shopee-orange); }
-        .btn-shopee { background-color: var(--shopee-orange); color: white; border: none; font-weight: bold; }
-        #searchItemsContainer { margin-top: 20px; }
-        .product-item { background: #fdfdfd; border: 1px solid #eee; border-radius: 12px; padding: 15px; margin-bottom: 10px; display: flex; align-items: center; text-align: left; }
-        .price-text { color: var(--shopee-orange); font-weight: bold; }
+        :root { --shopee-orange: #ee4d2d; }
+        body { background-color: #f8f9fa; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .tool-card { max-width: 700px; margin: 50px auto; background: #fff; padding: 30px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border-top: 5px solid var(--shopee-orange); }
+        .btn-shopee { background-color: var(--shopee-orange); color: white; border: none; font-weight: bold; transition: 0.3s; }
+        .btn-shopee:hover { background-color: #d73211; color: white; transform: scale(1.05); }
+        .product-item { background: #fff; border: 1px solid #eee; border-radius: 10px; padding: 15px; margin-bottom: 15px; display: flex; align-items: center; transition: 0.2s; }
+        .product-item:hover { box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
+        .price-text { color: var(--shopee-orange); font-size: 1.2rem; font-weight: bold; }
+        .product-name { font-size: 1rem; color: #333; margin-bottom: 5px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
     </style>
 </head>
 <body>
 
-<div class="container text-center">
-    <div class="tool-card">
-        <h2 class="mb-4">🔍 HỆ THỐNG PHÂN TÍCH DEAL SHOPEE</h2>
+<div class="container">
+    <div class="tool-card text-center">
+        <h2 class="mb-4">🔍 HỆ THỐNG PHÂN TÍCH DEAL</h2>
+        <p class="text-muted">Nhập tên sản phẩm để máy chủ Timon Tech gán mã giảm giá</p>
+        
         <div class="input-group mb-3">
-            <input type="text" id="shopeeInput" class="form-control form-control-lg" placeholder="Nhập tên SP (vd: Camera, bcs...)">
-            <button class="btn btn-shopee btn-lg px-4" onclick="sendRequest()">PHÂN TÍCH</button>
+            <input type="text" id="shopeeInput" class="form-control form-control-lg" placeholder="Ví dụ: Camera Imou, Sạc dự phòng...">
+            <button class="btn btn-shopee px-4" onclick="sendRequest()">PHÂN TÍCH</button>
         </div>
 
-        <div id="status" class="text-primary fw-bold my-3 d-none">
-            <span class="spinner-border spinner-border-sm"></span> Đang kết nối máy chủ Timon Tech...
+        <div id="status" class="my-4 d-none">
+            <div class="spinner-border text-danger" role="status"></div>
+            <div class="mt-2 text-danger fw-bold">Máy cày ở nhà đang cào dữ liệu Shopee... Vui lòng đợi chút nhé!</div>
         </div>
 
-        <div id="searchItemsContainer"></div>
+        <div id="searchItemsContainer" class="mt-4"></div>
     </div>
 </div>
 
 <script>
-    // --- DÁN FIREBASE CONFIG CỦA ÔNG VÀO ĐÂY ---
+    // Cấu hình Firebase của Timon
     const firebaseConfig = {
-  apiKey: "AIzaSyBB9RoTHWPhlcZkOlDSyOgZAqZMZyDn-g4",
-  authDomain: "timonaffiliate-d7849.firebaseapp.com",
-  databaseURL: "https://timonaffiliate-d7849-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "timonaffiliate-d7849",
-  storageBucket: "timonaffiliate-d7849.firebasestorage.app",
-  messagingSenderId: "863747128310",
-  appId: "1:863747128310:web:70b49c76b6bdc09b5c25d7",
-  measurementId: "G-1EYW657TB9"
-};
+        apiKey: "AIzaSyBB9RoTHWPhlcZkOlDSyOgZAqZMZyDn-g4",
+        authDomain: "timonaffiliate-d7849.firebaseapp.com",
+        databaseURL: "https://timonaffiliate-d7849-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "timonaffiliate-d7849",
+        storageBucket: "timonaffiliate-d7849.firebasestorage.app",
+        messagingSenderId: "863747128310",
+        appId: "1:863747128310:web:70b49c76b6bdc09b5c25d7"
+    };
     
     firebase.initializeApp(firebaseConfig);
     const database = firebase.database();
 
-    async function sendRequest() {
+    function sendRequest() {
         const keyword = document.getElementById('shopeeInput').value.trim();
         if (!keyword) return;
 
@@ -61,35 +65,52 @@
         status.classList.remove('d-none');
         container.innerHTML = '';
 
-        // 1. Gửi yêu cầu lên Firebase để con "Máy cày" ở nhà nhận lệnh
         const requestId = Date.now();
+
+        // 1. Gửi yêu cầu lên nhánh requests
         database.ref('requests/' + requestId).set({
             keyword: keyword,
             status: 'pending',
             timestamp: requestId
         });
 
-        // 2. Lắng nghe kết quả từ Firebase (Khi con máy cày cào xong thẩy lên)
-        database.ref('results/' + requestId).on('value', (snapshot) => {
+        // 2. Lắng nghe kết quả từ nhánh results
+        const resultRef = database.ref('results/' + requestId);
+        resultRef.on('value', (snapshot) => {
             const data = snapshot.val();
-            if (data) {
+            if (data && data.products) {
                 status.classList.add('d-none');
                 renderResults(data.products);
+                // Sau khi lấy kết quả xong thì ngắt lắng nghe để tiết kiệm
+                resultRef.off();
             }
         });
+
+        // Timeout 30s nếu máy cày ở nhà không phản hồi
+        setTimeout(() => {
+            if (!status.classList.contains('d-none')) {
+                status.innerHTML = '<div class="text-warning">⚠️ Có vẻ máy cày ở nhà đang bận hoặc chưa bật. Ông kiểm tra lại CMD nhé!</div>';
+            }
+        }, 30000);
     }
 
     function renderResults(products) {
         const container = document.getElementById('searchItemsContainer');
-        container.innerHTML = '';
+        container.innerHTML = '<h5 class="text-start mb-3">🔥 Deal đã gán mã Affiliate cho Timon:</h5>';
+        
+        if (products.length === 0) {
+            container.innerHTML = '<p class="text-muted">Không tìm thấy sản phẩm nào. Thử từ khóa khác nhé!</p>';
+            return;
+        }
+
         products.forEach(p => {
             container.innerHTML += `
                 <div class="product-item">
-                    <div class="flex-grow-1">
-                        <div class="fw-bold text-dark">${p.name}</div>
-                        <div class="price-text">đ ${p.price}</div>
+                    <div class="flex-grow-1 me-3">
+                        <div class="product-name fw-bold text-dark">${p.name}</div>
+                        <div class="price-text">₫${p.price}</div>
                     </div>
-                    <a href="${p.aff_link}" target="_blank" class="btn btn-sm btn-shopee">Mua ngay</a>
+                    <a href="${p.aff_link}" target="_blank" class="btn btn-shopee">MUA NGAY</a>
                 </div>
             `;
         });
